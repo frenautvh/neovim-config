@@ -2,6 +2,22 @@ require('gitsigns').setup()
 require("nvim-autopairs").setup {}
 require('Comment').setup()
 
+require("mason").setup()
+
+local oil = require("oil")
+oil.setup({
+  columns = {
+    "icon",
+  },
+  keymaps = {
+    ["<bs>"] = "actions.parent",
+    ["<esc>"] = "actions.close",
+  },
+  float = {
+    padding = 4,
+  },
+})
+
 local lspconfig = require('lspconfig')
 lspconfig.tsserver.setup {}
 local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -10,6 +26,8 @@ lspconfig.html.setup {
   capabilities = capabilities,
 }
 lspconfig.eslint.setup {}
+vim.keymap.set('n', '<space>e', vim.diagnostic.open_float)
+vim.keymap.set('n', '<tab>', oil.open_float)
 
 local cmp = require('cmp')
 cmp.setup({

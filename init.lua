@@ -32,10 +32,19 @@ vim.opt.background = "light"
 vim.keymap.set('n', 'j', 'gj')
 vim.keymap.set('n', 'k', 'gk')
 vim.keymap.set('n', '<bs>', ':b#<cr>')
-vim.keymap.set('n', '<cr>', '0<esc>j')
-vim.keymap.set('n', '<space>', ':nohl<cr>')
+vim.keymap.set('n', '<esc>', '<esc>:nohl<cr>')
+vim.keymap.set('i', '<tab>', [[pumvisible() ? "\<c-n>" : "\<tab>"]], { expr = true })
+vim.keymap.set('i', '<s-tab>', [[pumvisible() ? "\<c-p>" : "\<s-tab>"]], { expr = true })
 
--- plugins
+vim.g.neoformat_try_node_exe = 1
+
+vim.o.updatetime = 250
+vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+  group = vim.api.nvim_create_augroup("float_diagnostic_cursor", { clear = true }),
+  callback = function ()
+    vim.diagnostic.open_float(nil, { focus=false, scope="cursor" })
+  end
+})
 
 require("lazy").setup({
   {
@@ -48,7 +57,7 @@ require("lazy").setup({
   },
   {
     'nvim-telescope/telescope.nvim',
-    tag = '0.1.5',
+    tag = '0.1.8',
     dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
       require('telescope').setup({
@@ -57,11 +66,26 @@ require("lazy").setup({
         }
       })
       local builtin = require("telescope.builtin")
-      vim.keymap.set("n", "go", builtin.buffers, {})
-      vim.keymap.set("n", "gh", builtin.oldfiles, {})
-      vim.keymap.set("n", "gf", builtin.git_files, {})
-      vim.keymap.set("n", "gd", builtin.lsp_implementations, {})
-      vim.keymap.set("n", "gj", builtin.jumplist, {})
+      vim.keymap.set("n", "<space>", function()
+        builtin.buffers({ initial_mode = "normal", sort_mru = true, ignore_current_buffer = true })
+      end, {})
+      vim.keymap.set("n", "<up>", function()
+        builtin.oldfiles({ initial_mode = "normal"  })
+      end, {})
+      vim.keymap.set("n", "<f1>", function()
+        builtin.lsp_references({ initial_mode = "normal"  })
+      end, {})
+      vim.keymap.set("n", "<f2>", function()
+        builtin.diagnostics({ initial_mode = "normal"  })
+      end, {})
+      vim.keymap.set("n", "<right>", builtin.git_files, {})
+    end
+  },
+  {
+    "nvim-telescope/telescope-ui-select.nvim",
+    dependencies = { 'nvim-telescope/telescope.nvim' },
+    config = function()
+      require("telescope").load_extension("ui-select")
     end
   },
   {
@@ -101,46 +125,37 @@ require("lazy").setup({
   },
   {
     "neovim/nvim-lspconfig",
-    dependencies = { 'hrsh7th/cmp-nvim-lsp' },
     config = function()
       local lspconfig = require('lspconfig')
-      -- local capabilities = vim.lsp.protocol.make_client_capabilities()
-      local lsp_capabilities = require('cmp_nvim_lsp').default_capabilities()
-      -- capabilities.textDocument.completion.completionItem.snippetSupport = true
-      lspconfig.html.setup { capabilities = lsp_capabilities }
-      lspconfig.eslint.setup { capabilities = lsp_capabilities }
-      lspconfig.tsserver.setup { capabilities = lsp_capabilities }
-      vim.keymap.set('n', 'gd', vim.lsp.buf.definition)
+      lspconfig.html.setup { }
+      lspconfig.eslint.setup { }
+      lspconfig.tsserver.setup { }
+      vim.keymap.set('n', 'ga', vim.lsp.buf.code_action)
       vim.keymap.set('n', 'gr', vim.lsp.buf.rename)
-      vim.keymap.set('n', 'ge', vim.diagnostic.open_float)
-      vim.keymap.set("n", "==", vim.lsp.buf.format, {})
+      vim.keymap.set('n', 'gm', vim.lsp.buf.format)
     end,
   },
   {
-    "stevearc/oil.nvim",
+    'echasnovski/mini.nvim',
+    version = false,
     config = function()
-      local oil = require("oil")
-      oil.setup({
-        columns = {
-          "icon",
-        },
-        keymaps = {
-          ["<bs>"] = "actions.parent",
-          ["<esc>"] = "actions.close",
-        },
-        float = {
-          padding = 4,
+      require('mini.ai').setup()
+      require('mini.icons').setup()
+      require('mini.files').setup({
+        mappings = {
+          close = '<esc>',
         },
       })
-      vim.keymap.set('n', '<tab>', oil.open_float)
+      require('mini.comment').setup()
+      require('mini.completion').setup()
+      vim.keymap.set('n', '<tab>', MiniFiles.open)
     end,
   },
   {
     "editorconfig/editorconfig-vim",
   },
   {
-    "numToStr/Comment.nvim",
-    config = true,
+    'tpope/vim-surround',
   },
   {
     "windwp/nvim-autopairs",
@@ -152,68 +167,9 @@ require("lazy").setup({
     config = true,
   },
   {
-    "mattn/emmet-vim",
-    event = "InsertEnter",
-  },
-  {
-    "hrsh7th/nvim-cmp",
-    dependencies = {
-      'hrsh7th/cmp-nvim-lsp',
-      'hrsh7th/cmp-buffer',
-      'hrsh7th/cmp-path',
-      'hrsh7th/cmp-cmdline',
-    },
-    event = 'InsertEnter',
+    'sbdchd/neoformat',
     config = function()
-      local cmp = require('cmp')
-      cmp.setup({
-        mapping = cmp.mapping.preset.insert({
-          ["<Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then cmp.select_next_item() else fallback() end
-          end, { "i", "s", "c" }),
-          ["<S-Tab>"] = cmp.mapping(function()
-            if cmp.visible() then cmp.select_prev_item() end
-          end, { "i", "s", "c" }),
-          ['<Up>'] = cmp.mapping(cmp.mapping.select_prev_item({
-            behavior = cmp.SelectBehavior.Select
-          }), {'i', 's', 'c'}),
-          ['<Down>'] = cmp.mapping(cmp.mapping.select_next_item({
-            behavior = cmp.SelectBehavior.Select
-          }), {'i', 's', 'c'}),
-          ['<CR>'] = cmp.mapping(cmp.mapping.confirm({ select = false }), {'i', 's', 'c'}),
-        }), 
-        sources = cmp.config.sources({
-          { name = 'nvim_lsp' },
-          -- { name = 'buffer', option = { get_bufnrs = function() return vim.api.nvim_list_bufs() end } },
-          { name = 'path' },
-        }),
-        -- sorting = {
-        --   comparators = {
-        --     cmp.config.compare.offset,
-        --     cmp.config.compare.scores,
-        --     -- cmp.config.compare.locality,
-        --   }
-        -- }
-      })
-      cmp.setup.cmdline('/', {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = {
-          { name = 'buffer' }
-        }
-      })
-      cmp.setup.cmdline(':', {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = cmp.config.sources({
-          { name = 'path' }
-        }, {
-          { name = 'cmdline' }
-        })
-      })
-      local capabilities = require('cmp_nvim_lsp').default_capabilities()
-      require('lspconfig').tsserver.setup {
-        capabilities = capabilities,
-      }
-    end
+      vim.keymap.set('n', '==', ':Neoformat<cr>')
+    end,
   },
 })
-

@@ -70,7 +70,7 @@ require("lazy").setup({
         builtin.buffers({ initial_mode = "normal", sort_mru = true, ignore_current_buffer = true })
       end, {})
       vim.keymap.set("n", "<up>", function()
-        builtin.oldfiles({ initial_mode = "normal"  })
+        builtin.oldfiles()
       end, {})
       vim.keymap.set("n", "<f1>", function()
         builtin.lsp_references({ initial_mode = "normal"  })
@@ -99,7 +99,7 @@ require("lazy").setup({
     config = function()
       require('mason-lspconfig').setup({
         ensure_installed = {
-          "tsserver",
+          "ts_ls",
           "eslint",
           "tailwindcss",
         }
@@ -129,7 +129,7 @@ require("lazy").setup({
       local lspconfig = require('lspconfig')
       lspconfig.html.setup { }
       lspconfig.eslint.setup { }
-      lspconfig.tsserver.setup { }
+      lspconfig.ts_ls.setup { }
       vim.keymap.set('n', 'ga', vim.lsp.buf.code_action)
       vim.keymap.set('n', 'gr', vim.lsp.buf.rename)
       vim.keymap.set('n', 'gm', vim.lsp.buf.format)
@@ -149,7 +149,18 @@ require("lazy").setup({
       require('mini.comment').setup()
       require('mini.completion').setup()
       vim.keymap.set('n', '<tab>', MiniFiles.open)
+      vim.keymap.set('i', '<c-o>', MiniCompletion.complete_twostage)
     end,
+  },
+  {
+    "almo7aya/openingh.nvim",
+    config = function()
+      local openingh = require("openingh")
+      vim.keymap.set('n', '<f3>', function()
+        local url = openingh.get_file_url(openingh.priority.BRANCH)
+        vim.cmd("call setreg('+', '" .. url .. "')")
+      end)
+    end
   },
   {
     "editorconfig/editorconfig-vim",

@@ -1,21 +1,35 @@
 return {
   {
     'nvim-telescope/telescope.nvim',
+    enabled = false,
     dependencies = {
       'nvim-lua/plenary.nvim',
       'debugloop/telescope-undo.nvim',
+      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
     },
     config = function()
       local telescope = require('telescope')
       local builtin = require("telescope.builtin")
       telescope.setup({
         defaults = {
-          path_display = { "filename_first", "truncate" },
+          path_display = {
+            "filename_first",
+            "truncate"
+          },
           layout_config = {
             horizontal = { width = 0.95 },
           }
+        },
+        extensions = {
+          fzf = {
+            fuzzy = true,
+            override_generic_sorter = true,
+            override_file_sorter = true,
+            case_mode = "smart_case",
+          }
         }
       })
+      telescope.load_extension("fzf")
       telescope.load_extension("undo")
       vim.keymap.set("n", "<leader>b", function()
         builtin.buffers(require('telescope.themes').get_dropdown({
@@ -24,11 +38,11 @@ return {
           ignore_current_buffer = true,
         }))
       end)
-      vim.keymap.set("n", "<leader>r", function() builtin.oldfiles() end)
-      vim.keymap.set("n", "<leader>u", function() telescope.extensions.undo.undo() end)
-      vim.keymap.set("n", "<leader><leader>", function() builtin.resume() end)
-      vim.keymap.set("n", "<leader>ff", function() builtin.find_files() end)
-      vim.keymap.set("n", "<leader>fg", function() builtin.live_grep() end)
+      vim.keymap.set("n", "<leader>r", builtin.oldfiles)
+      vim.keymap.set("n", "<leader>u", telescope.extensions.undo.undo)
+      vim.keymap.set("n", "<leader><leader>", builtin.resume)
+      vim.keymap.set("n", "<leader>ff", builtin.find_files)
+      vim.keymap.set("n", "<leader>fg", builtin.live_grep)
       vim.keymap.set("n", "<leader>gs", function()
         builtin.git_status({
           initial_mode = "normal",

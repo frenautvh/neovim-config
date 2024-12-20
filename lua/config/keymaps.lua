@@ -1,9 +1,10 @@
 local keymap = vim.keymap
+local util = require("util")
 
 -- qol
 keymap.set('n', '<leader>s', ':w<cr>')
 keymap.set('n', '<leader>o', ':b#<cr>')
-keymap.set('n', '<leader>q', ':bd!<cr>')
+keymap.set('n', '<leader>q', util.buffer_close)
 keymap.set('n', '<esc>', '<esc>:nohl<cr>')
 
 -- insert mode

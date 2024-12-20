@@ -1,13 +1,17 @@
--- local function lsp_organize_imports()
---   local params = { command = "_typescript.organizeImports", arguments = { vim.api.nvim_buf_get_name(0) }, title = "" }
---   vim.lsp.buf.execute_command(params)
--- end
+local lsp_organize_imports = function()
+  local params = {
+    command = "_typescript.organizeImports",
+    arguments = { vim.api.nvim_buf_get_name(0) },
+    title = ""
+  }
+  vim.lsp.buf.execute_command(params)
+end
 
 return {
   {
     "neovim/nvim-lspconfig",
     dependencies = {
-      "hrsh7th/nvim-cmp",
+      "saghen/blink.cmp",
     },
     opts = {
       servers = {
@@ -35,7 +39,7 @@ return {
     },
     config = function(_, opts)
       local lspconfig = require('lspconfig')
-      local lsp_capabilities = require('cmp_nvim_lsp').default_capabilities()
+      local lsp_capabilities = require('blink.cmp').get_lsp_capabilities()
       for server, config in pairs(opts.servers) do
         config.capabilities = lsp_capabilities
         lspconfig[server].setup(config)
@@ -43,6 +47,7 @@ return {
       vim.keymap.set('n', '==', vim.lsp.buf.format)
       vim.keymap.set('n', 'K', vim.lsp.buf.hover)
       vim.keymap.set('n', 'ga', vim.lsp.buf.code_action)
+      vim.keymap.set('n', '<leader>i', lsp_organize_imports)
     end,
   }
 }

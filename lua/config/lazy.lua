@@ -20,5 +20,6 @@ require("lazy").setup({
     { import = "plugins" },
   },
   install = { colorscheme = { "catppuccin-mocha" } },
+  change_detection = { notify = false },
   checker = { enabled = true },
 })

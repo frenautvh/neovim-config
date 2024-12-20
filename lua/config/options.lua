@@ -1,6 +1,5 @@
 local options = {
   number = true,
-  autochdir = true,
   lazyredraw = true,
   undofile = true,
   expandtab = true,
@@ -12,7 +11,6 @@ local options = {
   clipboard = 'unnamedplus',
   scrolloff = 10,
   cursorline = true,
-  background = "dark",
 }
 
 for k, v in pairs(options) do
@@ -21,4 +19,3 @@ end
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = ","
--- vim.cmd [[colorscheme delek]]
